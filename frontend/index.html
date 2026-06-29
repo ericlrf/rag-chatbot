@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>V-LAB RAG Chatbot</title>
+  <style>
+    :root {
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: #111827;
+      background: #f3f4f6;
+    }
+    body { margin: 0; }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px;
+    }
+    .card {
+      background: white;
+      border-radius: 18px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+      padding: 24px;
+    }
+    h1 { margin: 0 0 8px; font-size: 1.8rem; }
+    p { line-height: 1.5; color: #4b5563; }
+    label { font-weight: 700; display: block; margin-bottom: 8px; }
+    textarea {
+      width: 100%;
+      min-height: 110px;
+      resize: vertical;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 14px;
+      font: inherit;
+      box-sizing: border-box;
+    }
+    button {
+      margin-top: 12px;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      background: #111827;
+      color: white;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: 0.6; cursor: wait; }
+    .answer, .sources {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 12px;
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      white-space: pre-wrap;
+    }
+    .source-item {
+      padding: 12px 0;
+      border-top: 1px solid #e5e7eb;
+      white-space: normal;
+    }
+    .source-item:first-child { border-top: 0; }
+    code { background: #eef2ff; padding: 2px 6px; border-radius: 6px; }
+    .error { color: #b91c1c; font-weight: 700; }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="card">
+      <h1>V-LAB RAG Chatbot</h1>
+      <p>
+        Demo de chatbot com RAG. Antes de perguntar, coloque documentos em
+        <code>data/documents</code> e execute a ingestão.
+      </p>
+
+      <form id="chat-form">
+        <label for="question">Pergunta</label>
+        <textarea id="question" placeholder="Ex.: Quais são os principais requisitos técnicos?" required></textarea>
+        <button id="submit" type="submit">Perguntar</button>
+      </form>
+
+      <div id="status"></div>
+      <div id="answer" class="answer" hidden></div>
+      <div id="sources" class="sources" hidden></div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.querySelector("#chat-form");
+    const questionEl = document.querySelector("#question");
+    const submitEl = document.querySelector("#submit");
+    const statusEl = document.querySelector("#status");
+    const answerEl = document.querySelector("#answer");
+    const sourcesEl = document.querySelector("#sources");
+    const history = [];
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const question = questionEl.value.trim();
+      if (!question) return;
+
+      submitEl.disabled = true;
+      statusEl.innerHTML = "Consultando documentos...";
+      statusEl.className = "";
+      answerEl.hidden = true;
+      sourcesEl.hidden = true;
+
+      try {
+        const response = await fetch("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ question, history, top_k: 5 })
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.detail || "Erro ao consultar a API.");
+        }
+
+        history.push({ role: "user", content: question });
+        history.push({ role: "assistant", content: data.answer });
+
+        answerEl.textContent = data.answer;
+        answerEl.hidden = false;
+
+        sourcesEl.innerHTML = `<strong>Fontes recuperadas</strong>` + data.sources.map((source) => `
+          <div class="source-item">
+            <strong>[Fonte ${source.source_id}] ${source.file_name}</strong><br />
+            ${source.page ? `Página: ${source.page}<br />` : ""}
+            Chunk: ${source.chunk_index}<br />
+            Distância: ${source.score?.toFixed?.(4) ?? "n/a"}<br />
+            <em>${source.excerpt}</em>
+          </div>
+        `).join("");
+        sourcesEl.hidden = false;
+        statusEl.innerHTML = "";
+      } catch (error) {
+        statusEl.textContent = error.message;
+        statusEl.className = "error";
+      } finally {
+        submitEl.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
