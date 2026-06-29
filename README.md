@@ -1,4 +1,4 @@
-# V-LAB RAG Chatbot (https://github.com/ericlrf/rag-chatbot)
+# RAG Chatbot (https://github.com/ericlrf/rag-chatbot)
 
 Projeto de portfólio para entrevista: chatbot com **Retrieval-Augmented Generation (RAG)**, API em **FastAPI**, embeddings da OpenAI, banco vetorial local com **ChromaDB** e interface web simples para demonstração.
 
@@ -261,9 +261,9 @@ Para uso em produção, recomenda-se adicionar:
 
 ---
 
-## 10. Como apresentar na entrevista
+## 10. Apresentação do mini-projeto
 
-Sugestão de fala:
+Sugestão de resumo:
 
 > Desenvolvi um protótipo de chatbot com RAG para consulta a documentos. O sistema possui uma API em FastAPI, pipeline de ingestão para PDF, DOCX, Markdown e TXT, geração de embeddings com a OpenAI, persistência vetorial com ChromaDB e uma interface web simples. A arquitetura separa extração, chunking, embeddings, recuperação e geração, o que facilita manutenção e evolução. Também inclui fontes nas respostas e uma regra explícita para evitar respostas inventadas quando o contexto não contém a informação.
 
