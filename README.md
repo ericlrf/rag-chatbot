@@ -1,4 +1,4 @@
-# V-LAB RAG Chatbot
+# V-LAB RAG Chatbot (https://github.com/ericlrf/rag-chatbot)
 
 Projeto de portfólio para entrevista: chatbot com **Retrieval-Augmented Generation (RAG)**, API em **FastAPI**, embeddings da OpenAI, banco vetorial local com **ChromaDB** e interface web simples para demonstração.
 
